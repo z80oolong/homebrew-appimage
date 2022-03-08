@@ -14,7 +14,7 @@
 
 ### ```AppImage::Mixin#appimage_name```
 
-```brew appimage-build``` コマンドによって出力される [AppImage] ファイルのパッケージ名を返します。
+```brew appimage-build``` コマンドによって出力される [AppImage][APPI] ファイルのパッケージ名を返します。
 
 ```brew appimage-build``` コマンドの実行時にオプション ```-o, --output``` が指定されない場合は、 ```brew appimage-build``` コマンドは、出力先の [AppImage][APPI] ファイルのファイル名を ```<AppImage::Mixin#appimage_name の返値>-<AppImage::Mixin#appimage_version の返り値>-<uname -m コマンド等で示されるアーキテクチャ名>.AppImage``` とします。
 

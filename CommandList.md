@@ -13,7 +13,9 @@
 以下に、 ```brew appimage-build``` コマンドが取る主なオプションを示します。
 
 - ```-o, --output``` … 生成する [AppImage][APPI] ファイルの出力先のパスを指定します。
-- ```-g, --global-exclude``` … [AppImage][APPI] ファイルの実行によって起動される実行ファイルが依存する動的ライブラリのうち、 [AppImage][APPI] ファイルへの同梱の除外対象となる動的ライブラリを厳密に除外します。このオプションを指定しないと、 ```brew appimage-build``` コマンドは、 [AppImage][APPI] ファイルへの同梱の除外対象となる動的ライブラリであっても、 [Linuxbrew][BREW] に導入されており、かつ実行ファイルが依存する動的ライブラリであれば、その動的ライブラリを同梱の対象とします。ここで、 ```brew appimage-build``` コマンドにおいて、 [AppImage][APPI] ファイルへの同梱の除外対象となる動的ライブラリのファイル名は以下の通りです。
+- ```-g, --global-exclude``` … [AppImage][APPI] ファイルの実行によって起動される実行ファイルが依存する動的ライブラリのうち、 [AppImage][APPI] ファイルへの同梱の除外対象となる動的ライブラリを厳密に除外します。
+  このオプションを指定しないと、 ```brew appimage-build``` コマンドは、 [AppImage][APPI] ファイルへの同梱の除外対象となる動的ライブラリであっても、 [Linuxbrew][BREW] に導入されており、かつ実行ファイルが依存する動的ライブラリであれば、その動的ライブラリを同梱の対象とします。
+  ここで、 ```brew appimage-build``` コマンドにおいて、 [AppImage][APPI] ファイルへの同梱の除外対象となる動的ライブラリのファイル名は以下の通りです。
   ```
   libanl.so.1, libBrokenLocale.so.1, libcidn.so.1, libc.so.6, libdl.so.2, libm.so.6, libmvec.so.1, libnss_compat.so.2, libnss_dns.so.2, libnss_files.so.2,
   libnss_hesiod.so.2, libnss_nisplus.so.2, libnss_nis.so.2, libpthread.so.0, libresolv.so.2, librt.so.1, libthread_db.so.1, libutil.so.1, libstdc++.so.6,
