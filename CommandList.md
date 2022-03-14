@@ -8,7 +8,7 @@
 
 ### ```brew appimage-build```
 
-既にインストール済の Formula 名を引数に取り、引数として与えられた Formula によって導入されたアプリケーションを起動するための [AppImage][APPI] ファイルを生成する為のコマンドです。
+既にインストール済の Formula 名を一つだけ引数に取り、引数として与えられた Formula によって導入されたアプリケーションを起動するための [AppImage][APPI] ファイルを生成する為のコマンドです。
 
 以下に、 ```brew appimage-build``` コマンドが取る主なオプションを示します。
 
@@ -26,7 +26,7 @@
   ```
   ここで、動的ライブラリのファイル名の判別については、**動的ライブラリのディレクトリパスを除いたファイル名の完全一致に依ることに留意する必要があります。**
 - ```-c, --core-include``` … [AppImage][APPI] ファイルへの同梱の除外対象となる動的ライブラリであるかどうかに関わらず、 [AppImage][APPI] ファイルの実行によって起動される実行ファイルが依存する動的ライブラリを全て [AppImage][APPI] ファイルに同梱します。
-- ```-r, --load-file``` … 指定された Ruby ファイルを読み込みます。引数で指定した Formula の挙動を変更するためのオプションです。
+- ```-r, --load-file``` … 指定された Ruby ファイルを読み込みます。引数で指定した Formula クラスのインスタンスメソッドを追加で記述し、 Formula クラスを修正するためのオプションです。
 - ```-v, --verbose``` … [AppImage][APPI] ファイルの生成過程の詳細を表示します。
 
 例えば、 [AppImage][APPI] ファイルの生成過程の詳細を表示しながら、 ```z80oolong/tmux/tmux@2.6``` によって導入された tmux を、 tmux が依存する動的ライブラリを全て [AppImage][APPI] ファイルに同梱するようにして、 [AppImage][APPI] ファイルをファイル名 ```tmux-eaw-2.6-glibc-2.34-x86_64.[AppImage][APPI]``` に出力するには以下のようにして、 ```brew appimage-build``` コマンドを実行します。
@@ -43,18 +43,18 @@
 - [AppImage][APPI] ファイルのアイコンファイル及び実行ファイルに対応した ```*.desktop``` ファイルについて、デフォルトのファイルを作業用のディレクトリに配置する。
 - 以上によって配置した**作業用のディレクトリに対して、 [AppImage][APPI] ファイルを生成するアプリケーション ```appimagetool``` を実行し、[AppImage][APPI] ファイルを生成する。**
 
-従って、アプリケーションが適切に動作する [AppImage][APPI] ファイルの生成の為に必要となる以下の処理等に関しては、当該 Formula ファイルを別のディレクトリにコピーして修正する等して、**ユーザ自身によって行う必要があります。**
+従って、アプリケーションが適切に動作する [AppImage][APPI] ファイルの生成の為に必要となる以下の処理等に関しては、 ```-r, --load-file``` オプションで指定するファイルに、引数で指定した Formula クラスのインスタンスメソッドを記述するか、引数で指定した Formula クラスが記述されたファイルを別のディレクトリにコピーして修正する等して、**ユーザ自身によって行う必要があります。**
 
 - ディレクトリ ```$HOMEBREW_PREFIX/opt/<formula_name>/share``` 以下等に置かれているような、 [AppImage][APPI] ファイルの実行時に起動される各種アプリケーションに必要となる設定ファイル等の作業用のディレクトリへの配置。
 - [AppImage][APPI] ファイルの実行時に起動されるスクリプトファイル ```AppRun``` について、 [AppImage][APPI] ファイルの実行時に起動される各種アプリケーションに応じた修正。
-- 設定ファイル等の各種ファイルパス名が、絶対パスとして実行ファイルのソースコード等にハードコードされている場合、相対パス若しくは環境変数 ```$APPDIR``` を参照するようにソースコード等の修正。
 - [AppImage][APPI] ファイルで使用するアイコンファイル及び実行ファイルに対応した ```*.desktop``` ファイルについて、各種アプリケーションに応じた修正。
+- 設定ファイル等の各種ファイルパス名が、絶対パスとして実行ファイルのソースコード等にハードコードされている場合、相対パス若しくは環境変数 ```$APPDIR``` を参照するようにソースコード等の修正。
 
 なお、ユーザ自身によって行う処理に関しては、主に ```brew appimage-build``` コマンドによって拡張される各種 ```Formula``` クラスのインスタンスメソッドの再定義によって行います。 ```Formula``` クラスのインスタンスメソッドの再定義に関する詳細は、ファイル ```MethodList.md``` を参照して下さい。
 
 ### ```brew appimage-install```
 
-[AppImage][APPI] ファイルのパス若しくは [AppImage][APPI] が置かれている URL を引数に取り、引数によって指定された [AppImage][APPI] ファイルを [Linuxbrew][BREW] にインストールする為のコマンドです。
+[AppImage][APPI] ファイルのパス若しくは [AppImage][APPI] が置かれている URL を一つだけ引数に取り、引数によって指定された [AppImage][APPI] ファイルを [Linuxbrew][BREW] にインストールする為のコマンドです。
 
 以下に、 ```brew appimage-install``` コマンドが取るオプションについて示します。
 
@@ -66,14 +66,19 @@
 
 例えば、 ```https://example.com/download/foo-1.0-x86_64.AppImage``` なる URL に置かれた [AppImage][APPI] ファイルを ```foo@1.0``` なる Formula 名で [Linuxbrew][BREW] にインストールし、これを ```foo``` なるコマンド名にて実行させるようにするには、以下のように ```brew appimage-install``` コマンドを実行します。
 
+なお、 ```brew appimage-install``` コマンドによってインストールされた [AppImage][APPI] ファイルは、 [Linuxbrew][BREW] からは、 **Keg only としてインストールされることに留意して下さい。**
+
+実際に ```foo``` コマンドを使用する際は、 ```brew link --force``` コマンドを実行する必要があります。
+
 ```
  $ brew appimage-install -n foo@1.0 -c foo https://example.com/download/foo-1.0-x86_64.AppImage
+ $ brew link --force foo@1.0    # (foo コマンドを使用する場合に必要。)
 ```
 
 なお、 ```brew appimage-install``` コマンドによってインストールされた [AppImage][APPI] ファイルは、以下のように ```brew remove``` コマンドを用いてアンインストールを行うことが可能です。
 
 ```
- $ brew remove <name>@<version>
+ $ brew remove foo@1.0
 ```
 
 <!-- 外部リンク一覧 -->
