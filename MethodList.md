@@ -12,46 +12,6 @@
 
 即ち、 ```AppImage::Builder``` クラスのインスタンスは、本文書で述べるメソッドの他に、 ```AppImage::Builder#prefix, AppImage::Builder#opt_bin``` 等のメソッドを呼び出すことが出来、これらのメソッドは内部に保持した Formula クラスのインスタンスメソッドを呼び出した結果の返り値を返します。
 
-## ```AppImage::Builder``` クラスの派生クラスの実例
-
-以下に、 ```brew appimage-build``` コマンドによって使用される ```AppImage::Builder``` クラスの派生クラスの実例を示します。本文書では、疑似端末の多重化ソフトである tmux の [AppImage] ファイルを生成するための ```TmuxBuilder``` を示します。
-
-```
-  # AppImage::Builder クラスの派生クラスとして TmuxBuilder を定義。
-  class TmuxBuilder < AppImage::Builder
-    # TmuxBuilder#apprun メソッドで AppRun スクリプトの内容を返す。
-    def apprun; <<~EOS
-      #!/bin/sh
-      #export APPDIR="/tmp/.mount-tmuxXXXXXX"
-      if [ "x${APPDIR}" = "x" ]; then
-        export APPDIR="$(dirname "$(readlink -f "${0}")")"
-      fi
-      export PATH="${APPDIR}/usr/bin/:${PATH:+:$PATH}"
-      export LD_LIBRARY_PATH="${APPDIR}/usr/lib/:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-      export XDG_DATA_DIRS="${APPDIR}/usr/share/${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
-      export TERMINFO="${APPDIR}/usr/share/terminfo"
-      unset ARGV0
-
-      exec "tmux" "$@"
-      EOS
-    end
-
-    # TmuxBuilder#exec_path_list メソッドで、作業用ディレクトリ AppDir/usr/bin に配置する
-    # 実行ファイルを Pathname クラスのインスタンスのリストの形式で返す。
-    def exec_path_list
-      # TmuxBuilder#opt_bin メソッドで、引数に渡された Formula クラスのインスタンスメソッド
-      # Formula#opt_bin の返り値を得る。
-      return [opt_bin/"tmux"]
-    end
-
-    # TmuxBuilder#pre_build_appimage メソッドで、 AppImage ファイルの生成直前の処理を行う。
-    def pre_build_appimage(appdir, verbose)
-      # ここでは、 ncurses の設定ファイルを AppDir/usr/share 以下に配置する。
-      system("cp -pRv #{Formula["z80oolong/tmux/tmux-ncurses@6.2"].opt_share}/terminfo #{appdir}/usr/share")
-    end
-  end
-```
-
 ## メソッド一覧
 
 ### ```AppImage::Builder#appimage_name```
@@ -103,6 +63,46 @@
 なお、 ```AppImage::Builder#desktop(appdir, verbose)``` メソッドの引数 ```appdir``` には、 [AppImage][APPI] ファイルに同梱するファイル群が格納された作業用ディレクトリの絶対パスを表す ```Pathname``` クラスのインスタンスが渡されます。また、引数 ```verbose``` には、 ```brew appimage-build``` コマンドに ```-v --verbose``` オプションが指定された時に true が渡されます。
 
 ```AppImage::Builder#pre_build_appimage(appdir, verbose)``` メソッドでは、 [AppImage][APPI] ファイルの実行時に起動されるアプリケーションの設定等に必要となるファイル群を作業用ディレクトリ ```appdir``` へ配置する処理及び、 [AppImage][APPI] ファイルに設定するアイコンファイルの修正等、 [AppImage][APPI] ファイルの生成に必要な処理を記述する必要があります。
+
+## ```AppImage::Builder``` クラスの派生クラスの実例
+
+以下に、 ```brew appimage-build``` コマンドによって使用される ```AppImage::Builder``` クラスの派生クラスの実例を示します。本文書では、疑似端末の多重化ソフトである tmux の [AppImage] ファイルを生成するための ```TmuxBuilder``` を示します。
+
+```
+  # AppImage::Builder クラスの派生クラスとして TmuxBuilder を定義。
+  class TmuxBuilder < AppImage::Builder
+    # TmuxBuilder#apprun メソッドで AppRun スクリプトの内容を返す。
+    def apprun; <<~EOS
+      #!/bin/sh
+      #export APPDIR="/tmp/.mount-tmuxXXXXXX"
+      if [ "x${APPDIR}" = "x" ]; then
+        export APPDIR="$(dirname "$(readlink -f "${0}")")"
+      fi
+      export PATH="${APPDIR}/usr/bin/:${PATH:+:$PATH}"
+      export LD_LIBRARY_PATH="${APPDIR}/usr/lib/:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+      export XDG_DATA_DIRS="${APPDIR}/usr/share/${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+      export TERMINFO="${APPDIR}/usr/share/terminfo"
+      unset ARGV0
+
+      exec "tmux" "$@"
+      EOS
+    end
+
+    # TmuxBuilder#exec_path_list メソッドで、作業用ディレクトリ AppDir/usr/bin に配置する
+    # 実行ファイルを Pathname クラスのインスタンスのリストの形式で返す。
+    def exec_path_list
+      # TmuxBuilder#opt_bin メソッドで、引数に渡された Formula クラスのインスタンスメソッド
+      # Formula#opt_bin の返り値を得る。
+      return [opt_bin/"tmux"]
+    end
+
+    # TmuxBuilder#pre_build_appimage メソッドで、 AppImage ファイルの生成直前の処理を行う。
+    def pre_build_appimage(appdir, verbose)
+      # ここでは、 ncurses の設定ファイルを AppDir/usr/share 以下に配置する。
+      system("cp -pRv #{Formula["z80oolong/tmux/tmux-ncurses@6.2"].opt_share}/terminfo #{appdir}/usr/share")
+    end
+  end
+```
 
 <!-- 外部リンク一覧 -->
 
