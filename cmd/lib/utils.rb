@@ -1,6 +1,6 @@
 module AppImage
   module Utils
-    PROGS = ShellCommands.new
+    SHELL = ShellCommands.instance
     HOMEBREW_PREFIX = ENV["HOMEBREW_PREFIX"]
 
     def depend_so_path_list(exec_path, option = {})
@@ -9,7 +9,7 @@ module AppImage
       option[:include_list] ||= []; option[:global_exclude] ||= false
       option[:core_include] ||= false
 
-      %x{#{PROGS.ldd} #{exec_path}}.each_line do |line|
+      %x{#{SHELL.ldd} #{exec_path}}.each_line do |line|
         if %r{^\s*\S* => (\S*) \(0x[0-9a-f]*\)$} === line then
           so_path = Pathname.new($1); so_path_base = so_path.basename
           so_path_dir = so_path.dirname; so_path_real = so_path.realpath
@@ -43,12 +43,12 @@ module AppImage
       return result
     end
 
-    def install_apprun_icons_to_appdir(formula, verbose = false)
+    def install_apprun_icons_to_appdir(builder, verbose = false)
       appimage_icon_path = ((Pathname.new(__FILE__).realpath.dirname)/"../icons/appimage.png").realpath
-      appdir = formula.appdirpath
+      appdir = builder.appdir
 
       ohai "Install #{appdir}/AppRun." if verbose
-      (appdir/"AppRun").write(formula.apprun)
+      (appdir/"AppRun").write(builder.apprun)
       (appdir/"AppRun").chmod(0755)
 
       ["128x128", "16x16", "256x256", "32x32", "512x512", "64x64", "scalable"].each do |d|
@@ -57,58 +57,59 @@ module AppImage
       end
 
       ohai "Install #{appdir.share}/icons/hicolor/128x128/apps/appimage.png" if verbose
-      system "#{PROGS.cp} -pR #{appimage_icon_path} #{appdir.share}/icons/hicolor/128x128/apps/appimage.png"
+      system "#{SHELL.cp} -pR #{appimage_icon_path} #{appdir.share}/icons/hicolor/128x128/apps/appimage.png"
       Dir.chdir(appdir.to_s) do
-        system "#{PROGS.ln} -sf usr/share/icons/hicolor/128x128/apps/appimage.png ."
+        system "#{SHELL.ln} -sf usr/share/icons/hicolor/128x128/apps/appimage.png ."
       end
     end
 
-    def install_bin_lib_to_appdir(formula, exec_path, so_path_list, verbose = false)
+    def install_bin_lib_to_appdir(builder, exec_path, so_path_list, verbose = false)
       exec_base = exec_path.basename
-      appdir_bin = formula.appdirpath.bin
-      appdir_lib = formula.appdirpath.lib
+      appdir_bin = builder.appdir.bin
+      appdir_lib = builder.appdir.lib
+      appdir_share = builder.appdir.share
 
       ohai "Install #{exec_path}." if verbose
-      system("#{PROGS.cp} -pR #{exec_path.realpath} #{appdir_bin}")
+      system("#{SHELL.cp} -pR #{exec_path.realpath} #{appdir_bin}")
       (appdir_bin/exec_base).chmod(0755)
 
       ohai "PatchELF --set-rpath '${ORIGIN}/../lib:#{HOMEBREW_PREFIX}/lib' #{appdir_bin}/#{exec_base}" if verbose
-      system("#{PROGS.patchelf} --set-rpath '${ORIGIN}/../lib:#{HOMEBREW_PREFIX}/lib' #{appdir_bin}/#{exec_base}")
+      system("#{SHELL.patchelf} --set-rpath '${ORIGIN}/../lib:#{HOMEBREW_PREFIX}/lib' #{appdir_bin}/#{exec_base}")
 
       Dir.chdir(appdir_lib.to_s) do
         so_path_list.each do |so_base, so_real|
           realbase = so_real.basename
           if /^ld-linux.*\.so/ === so_base.to_s then
             ohai "PatchELF --set-interpreter #{so_real} #{appdir_bin}/#{exec_base}" if verbose
-            system("#{PROGS.patchelf} --set-interpreter #{so_real} #{appdir_bin}/#{exec_base}")
+            system("#{SHELL.patchelf} --set-interpreter #{so_real} #{appdir_bin}/#{exec_base}")
           elsif (Pathname.pwd/realbase).exist? then
             ohai "Skip, #{realbase} exists." if verbose
           else
             ohai "Install #{so_real}" if verbose
-            system("#{PROGS.cp} -pR #{so_real} .")
+            system("#{SHELL.cp} -pR #{so_real} .")
             (Pathname.pwd/realbase).chmod(0755)
             unless realbase == so_base then
               ohai "Link #{realbase} -> #{so_base}" if verbose
-              system("#{PROGS.ln} -sf #{realbase} #{so_base}")
+              system("#{SHELL.ln} -sf #{realbase} #{so_base}")
             end
 
             ohai "PatchELF --set-rpath '${ORIGIN}:#{HOMEBREW_PREFIX}/lib' ./#{realbase}" if verbose
-            system("#{PROGS.patchelf} --set-rpath '${ORIGIN}:#{HOMEBREW_PREFIX}/lib' ./#{realbase}")
+            system("#{SHELL.patchelf} --set-rpath '${ORIGIN}:#{HOMEBREW_PREFIX}/lib' ./#{realbase}")
           end
         end
       end
 
-      ohai "Install #{formula.appdirpath.share}/applications/#{exec_base}.desktop" if verbose
-      (formula.appdirpath.share/"applications/#{exec_base}.desktop").write(formula.desktop(exec_path))
+      ohai "Install #{appdir_share}/applications/#{exec_base}.desktop" if verbose
+      (appdir_share/"applications/#{exec_base}.desktop").write(builder.desktop(exec_path))
 
-      Dir.chdir(formula.appdirpath.to_s) do
-        system("#{PROGS.ln} -sf usr/share/applications/#{exec_base}.desktop .")
+      Dir.chdir(builder.appdir.to_s) do
+        system("#{SHELL.ln} -sf usr/share/applications/#{exec_base}.desktop .")
       end
     end
 
-    def build_appimage(formula, output_file, verbose = false)
-      ohai "AppImageTool -n #{formula.appdirpath} #{output_file}" if verbose
-      system "#{PROGS.appimagetool} -n #{formula.appdirpath} #{output_file}"
+    def build_appimage(builder, output_file, verbose = false)
+      ohai "AppImageTool -n #{builder.appdir} #{output_file}" if verbose
+      system "#{SHELL.appimagetool} -n #{builder.appdir} #{output_file}"
     end
   end
 end

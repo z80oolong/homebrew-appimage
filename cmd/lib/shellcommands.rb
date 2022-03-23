@@ -1,5 +1,9 @@
+require "singleton"
+
 module AppImage
   class ShellCommands
+    include Singleton
+
     def initialize
       @patchelf ||= (Formula["patchelf"].opt_bin/"patchelf")
       @appimagetool ||= (Formula["z80oolong/appimage/appimagetool"].opt_bin/"appimagetool")

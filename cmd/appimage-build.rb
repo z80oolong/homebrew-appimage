@@ -1,10 +1,10 @@
 $:.unshift(Pathname.new(__FILE__).realpath.dirname.to_s)
 
-require "cli/parser"
 require "formula"
+require "cli/parser"
 require "lib/appdirpath"
 require "lib/shellcommands"
-require "lib/mixin"
+require "lib/builder"
 require "lib/exclude_list"
 require "lib/utils"
 
@@ -36,44 +36,43 @@ module Homebrew
     extend AppImage::Utils
 
     args = appimage_build_args.parse
-
     formula = args.named.to_formulae.first
-    klass = formula.class
-    klass.include(AppImage::Mixin)
 
     if args.load_file then
       loadfile = Pathname.new(args.load_file).realpath
-      mod = klass.const_get(klass.to_s.gsub(/::[^:]*$/, ""))
-      mod.module_eval(loadfile.read)
+      AppImage::Builder::NameSpace.module_eval(loadfile.read)
       ohai "Load #{loadfile}" if args.verbose?
+      builder = AppImage::Builder.builder_class.new(formula)
+    else
+      builder = AppImage::Builder.new(formula)
     end
 
-    install_apprun_icons_to_appdir(formula, args.verbose?)
-    formula.exec_path_list.each do |exec_path|
+    install_apprun_icons_to_appdir(builder, args.verbose?)
+    builder.exec_path_list.each do |exec_path|
       so_path_list = depend_so_path_list(exec_path,
                       :verbose        => args.verbose?,
-                      :exclude_list   => formula.exclude_list,
-                      :include_list   => formula.include_list,
+                      :exclude_list   => builder.exclude_list,
+                      :include_list   => builder.include_list,
                       :global_exclude => args.global_exclude?,
                       :core_include   => args.core_include?)
-      install_bin_lib_to_appdir(formula, exec_path, so_path_list, args.verbose?)
+      install_bin_lib_to_appdir(builder, exec_path, so_path_list, args.verbose?)
     end
 
-    ohai "Call method Formula#pre_build_appimage" if args.verbose?
-    formula.pre_build_appimage(formula.appdirpath, args.verbose?)
+    ohai "Call method #{builder.class.name}#pre_build_appimage" if args.verbose?
+    builder.pre_build_appimage(builder.appdir, args.verbose?)
 
     if args.output then
       output_file = Pathname.new(args.output)
       output_file = (output_file.dirname.realpath/output_file.basename)
     else
-      appname = formula.appimage_name
-      appversion = formula.appimage_version
-      apparch = formula.appimage_arch
+      appname = builder.appimage_name
+      appversion = builder.appimage_version
+      apparch = builder.appimage_arch
       output_file = (Pathname.pwd/"#{appname}-#{appversion}-#{apparch}.AppImage")
     end
-    build_appimage(formula, output_file, args.verbose?)
+    build_appimage(builder, output_file, args.verbose?)
 
-    ohai "Delete #{formula.appdirpath.tmpdir}" if args.verbose?
-    formula.appdirpath.destroy
+    ohai "Delete #{(builder.appdir/"..").realpath}" if args.verbose?
+    builder.appdir.destroy
   end
 end

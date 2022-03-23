@@ -1,16 +1,31 @@
 module AppImage
-  module Mixin
-    def appdirpath
-      @appdirpath ||= AppDirPath.new
-      return @appdirpath
+  class Builder
+    module NameSpace; end
+
+    class << self
+      @@builder_class = self
+
+      def inherited(subklass)
+        @@builder_class = subklass
+      end
+
+      def builder_class
+        return @@builder_class
+      end
     end
 
+    def initialize(formula)
+      @formula = formula
+      @appdir  = AppDirPath.new
+    end
+    attr_reader :appdir
+
     def appimage_name
-      return self.name.gsub(/@.*$/, "")
+      return @formula.name.gsub(/@.*$/, "")
     end
 
     def appimage_version
-      keg = Keg.new((opt_bin/"..").realpath)
+      keg = Keg.new((@formula.opt_bin/"..").realpath)
       return keg.version.to_s.gsub(/_[0-9]*$/, "")
     end
 
@@ -27,7 +42,7 @@ module AppImage
     end
 
     def exec_path_list
-      return opt_bin.glob("*")
+      return @formula.opt_bin.glob("*")
     end
 
     def apprun; <<~EOS
@@ -49,16 +64,23 @@ module AppImage
       Type=Application
       Name=#{exec_path.basename}
       Exec=#{exec_path.basename}
-      Comment=#{desc}
+      Comment=#{@formula.desc}
       Icon=appimage
       Categories=Development;
       Terminal=true
       EOS
     end
 
-    def pre_build_appimage(appdirpath, verbose = false)
+    def pre_build_appimage(appdir, verbose = false)
       ohai "pre_build_appimage: Noop." if verbose
+    end
+
+    def method_missing(name, *args, &block)
+      return @formula.send(name, *args, &block)
+    end
+
+    def respond_to_missing?(sym, include_private = nil)
+      return respond_to_missing?(sym, include_private)
     end
   end
 end
-

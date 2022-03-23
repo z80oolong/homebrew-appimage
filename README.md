@@ -27,7 +27,11 @@
 
 なお、本リポジトリに含まれる ```brew``` の拡張コマンド及び Formula の一覧及びその詳細については、本リポジトリに同梱する ```CommandList.md```, ```FormulaList.md``` を参照して下さい。
 
-また、 [Linuxbrew][BREW] の Formula によって導入されたアプリケーションから [AppImage][APPI] ファイルを生成する場合、幾つかのアプリケーションについては、 Formula ファイルを修正する必要がある場合があります。これらの詳細については、本リポジトリに同梱する ```MethodList.md``` を参照して下さい。
+また、 ```CommandList.md``` にて詳述する通り、 [Linuxbrew][BREW] の Formula によって導入されたアプリケーションから [AppImage][APPI] ファイルを生成する場合は、 ```brew appimage-build``` コマンドを用います。
+
+しかし、大部分のアプリケーションに関しては ```brew appimage-build``` コマンドに、 [AppImage][APPI] ファイルの構築に関する具体的な設定及び処理に関する手順を定義するための ```AppImage::Builder``` クラスの派生クラスを記述した Ruby スクリプトファイルを ```-r, --load-file``` オプションを指定して読み込ませる必要があります。
+
+上述の詳細については、本リポジトリに同梱する ```MethodList.md``` を参照して下さい。
 
 ## その他詳細について
 

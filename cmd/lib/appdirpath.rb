@@ -12,7 +12,6 @@ module AppImage
 
       @tmpdir = Pathname.new(tmpdir)
     end
-    attr_reader :tmpdir
 
     def bin
       return (self/"usr/bin")
