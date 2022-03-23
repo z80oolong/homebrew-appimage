@@ -36,7 +36,7 @@
       EOS
     end
 
-    # TmuxBuilder#exec_path_list メソッドで、作業用ディレクトリ Appdir/usr/bin に配置する
+    # TmuxBuilder#exec_path_list メソッドで、作業用ディレクトリ AppDir/usr/bin に配置する
     # 実行ファイルを Pathname クラスのインスタンスのリストの形式で返す。
     def exec_path_list
       # TmuxBuilder#opt_bin メソッドで、引数に渡された Formula クラスのインスタンスメソッド
