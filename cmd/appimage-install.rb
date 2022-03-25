@@ -5,7 +5,7 @@ require "formula"
 require "lib/shellcommands"
 
 module Homebrew
-  PROGS = AppImage::ShellCommands.new
+  SHELL = AppImage::ShellCommands.instance
 
   extend T::Sig
 
@@ -87,7 +87,7 @@ module Homebrew
       raise "`--name` option must be `NAME@VERSION`."
     end
 
-    sha256 = %x{#{PROGS.curl} -s -L -o - #{option[:url]} | #{PROGS.sha256sum} -}
+    sha256 = %x{#{SHELL.curl} -s -L -o - #{option[:url]} | #{SHELL.sha256sum} -}
     sha256.gsub!(/^([0-9a-f]*).*/) { $1 }
     option[:sha256] = sha256.chomp!
     ohai "SHA256 Checksum of AppImage file = #{option[:sha256]}" if verbose
