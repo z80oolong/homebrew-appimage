@@ -80,7 +80,7 @@ module AppImage
     end
 
     def respond_to_missing?(sym, include_private = nil)
-      return respond_to_missing?(sym, include_private)
+      return @formula.respond_to?(sym, include_private)
     end
   end
 end
