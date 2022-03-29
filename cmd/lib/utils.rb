@@ -73,8 +73,8 @@ module AppImage
       system("#{SHELL.cp} -pR #{exec_path.realpath} #{appdir_bin}")
       (appdir_bin/exec_base).chmod(0755)
 
-      ohai "PatchELF --set-rpath '${ORIGIN}/../lib:#{HOMEBREW_PREFIX}/lib' #{appdir_bin}/#{exec_base}" if verbose
-      system("#{SHELL.patchelf} --set-rpath '${ORIGIN}/../lib:#{HOMEBREW_PREFIX}/lib' #{appdir_bin}/#{exec_base}")
+      ohai "PatchELF --set-rpath '${ORIGIN}/../lib' #{appdir_bin}/#{exec_base}" if verbose
+      system("#{SHELL.patchelf} --set-rpath '${ORIGIN}/../lib' #{appdir_bin}/#{exec_base}")
 
       Dir.chdir(appdir_lib.to_s) do
         so_path_list.each do |so_base, so_real|
@@ -93,8 +93,8 @@ module AppImage
               system("#{SHELL.ln} -sf #{realbase} #{so_base}")
             end
 
-            ohai "PatchELF --set-rpath '${ORIGIN}:#{HOMEBREW_PREFIX}/lib' ./#{realbase}" if verbose
-            system("#{SHELL.patchelf} --set-rpath '${ORIGIN}:#{HOMEBREW_PREFIX}/lib' ./#{realbase}")
+            ohai "PatchELF --set-rpath '${ORIGIN}' ./#{realbase}" if verbose
+            system("#{SHELL.patchelf} --set-rpath '${ORIGIN}' ./#{realbase}")
           end
         end
       end
