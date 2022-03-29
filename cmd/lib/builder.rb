@@ -50,9 +50,16 @@ module AppImage
       if [ "x${APPDIR}" = "x" ]; then
         export APPDIR="$(dirname "$(readlink -f "${0}")")"
       fi
-      export PATH="${APPDIR}/usr/bin/:${PATH:+:$PATH}"
-      export LD_LIBRARY_PATH="${APPDIR}/usr/lib/:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-      export XDG_DATA_DIRS="${APPDIR}/usr/share/${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+
+      if [ "x${HOMEBREW_PREFIX} = "x" ]; then
+        export PATH="${APPDIR}/usr/bin/:${PATH:+:$PATH}"
+        export LD_LIBRARY_PATH="${APPDIR}/usr/lib/:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export XDG_DATA_DIRS="${APPDIR}/usr/share/:${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+      else
+        export PATH="${APPDIR}/usr/bin/:${HOMEBREW_PREFIX}/bin/:${PATH:+:$PATH}"
+        export LD_LIBRARY_PATH="${APPDIR}/usr/lib/:${HOMEBREW_PREFIX}/lib/:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export XDG_DATA_DIRS="${APPDIR}/usr/share/:${HOMEBREW_PREFIX}/share/:${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+      fi
 
       EXEC=$(grep -e '^Exec=.*' "${APPDIR}"/*.desktop | head -n 1 | cut -d "=" -f 2 | cut -d " " -f 1)
       exec "${EXEC}" "$@"
@@ -62,7 +69,7 @@ module AppImage
     def desktop(exec_path); <<~EOS
       [Desktop Entry]
       Type=Application
-      Name=#{exec_path.basename}
+      Name=#{exec_path.basename.to_s.capitalize}
       Exec=#{exec_path.basename}
       Comment=#{@formula.desc}
       Icon=appimage

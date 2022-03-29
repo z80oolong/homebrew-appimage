@@ -9,6 +9,7 @@ module AppImage
       (self/"usr/share").mkpath
       (self/"usr/share/icons/hicolor").mkpath
       (self/"usr/share/applications").mkpath
+      (self/"usr/share/metainfo").mkpath
 
       @tmpdir = Pathname.new(tmpdir)
     end
