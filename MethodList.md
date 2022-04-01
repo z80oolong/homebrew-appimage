@@ -64,9 +64,9 @@
 
 ここで、 ```AppImage::AppDirPath``` クラスとは、 ```Pathname``` クラスの派生クラスであり、 ```Pathname``` クラスのインスタンスメソッドの他に以下のインスタンスメソッドが使用できます。 (なお、以下の ```AppImage::AppDirPath``` クラスのインスタンスメソッドの説明については、作業用ディレクトリの絶対パスを ```/path/to/AppDir``` と表記します。)
 
-- ```AppImage::AppDirPath#bin``` … 絶対パス ```/path/to/AppDir/usr/bin``` を表す ```Pathname``` クラスのインスタンスを返します。
-- ```AppImage::AppDirPath#lib``` … 絶対パス ```/path/to/AppDir/usr/lib``` を表す ```Pathname``` クラスのインスタンスを返します。
-- ```AppImage::AppDirPath#share``` … 絶対パス ```/path/to/AppDir/usr/share``` を表す ```Pathname``` クラスのインスタンスを返します。
+- **```AppImage::AppDirPath#bin```** … 絶対パス ```/path/to/AppDir/usr/bin``` を表す ```Pathname``` クラスのインスタンスを返します。
+- **```AppImage::AppDirPath#lib```** … 絶対パス ```/path/to/AppDir/usr/lib``` を表す ```Pathname``` クラスのインスタンスを返します。
+- **```AppImage::AppDirPath#share```** … 絶対パス ```/path/to/AppDir/usr/share``` を表す ```Pathname``` クラスのインスタンスを返します。
 
 また、引数 ```verbose``` には、 ```brew appimage-build``` コマンドに ```-v --verbose``` オプションが指定された時に true が渡されます。
 
