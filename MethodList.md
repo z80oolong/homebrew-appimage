@@ -60,13 +60,21 @@
 
 ```AppImage::Builder#pre_build_appimage(appdir, verbose)``` メソッドは、 [AppImage][APPI] ファイルに同梱する実行ファイルと動的ライブラリ及び初期化スクリプトファイル ```AppRun``` と ```*.desktop``` ファイル等を作業用ディレクトリに配置した後、 [AppImage][APPI] ファイルを生成するアプリケーション ```appimagetool``` を実行する直前に呼ばれるメソッドです。
 
-なお、 ```AppImage::Builder#desktop(appdir, verbose)``` メソッドの引数 ```appdir``` には、 [AppImage][APPI] ファイルに同梱するファイル群が格納された作業用ディレクトリの絶対パスを表す ```Pathname``` クラスのインスタンスが渡されます。また、引数 ```verbose``` には、 ```brew appimage-build``` コマンドに ```-v --verbose``` オプションが指定された時に true が渡されます。
+なお、 ```AppImage::Builder#desktop(appdir, verbose)``` メソッドの引数 ```appdir``` には、 [AppImage][APPI] ファイルに同梱するファイル群が格納された作業用ディレクトリの絶対パスを表す ```AppImage::AppDirPath``` クラスのインスタンスが渡されます。
+
+ここで、 ```AppImage::AppDirPath``` クラスとは、 ```Pathname``` クラスの派生クラスであり、 ```Pathname``` クラスのインスタンスメソッドの他に以下のインスタンスメソッドが使用できます。 (なお、以下の ```AppImage::AppDirPath``` クラスのインスタンスメソッドの説明については、作業用ディレクトリの絶対パスを ```/path/to/AppDir``` と表記します。)
+
+- ```AppImage::AppDirPath#bin``` … 絶対パス ```/path/to/AppDir/usr/bin``` を表す ```Pathname``` クラスのインスタンスを返します。
+- ```AppImage::AppDirPath#lib``` … 絶対パス ```/path/to/AppDir/usr/lib``` を表す ```Pathname``` クラスのインスタンスを返します。
+- ```AppImage::AppDirPath#share``` … 絶対パス ```/path/to/AppDir/usr/share``` を表す ```Pathname``` クラスのインスタンスを返します。
+
+また、引数 ```verbose``` には、 ```brew appimage-build``` コマンドに ```-v --verbose``` オプションが指定された時に true が渡されます。
 
 ```AppImage::Builder#pre_build_appimage(appdir, verbose)``` メソッドでは、 [AppImage][APPI] ファイルの実行時に起動されるアプリケーションの設定等に必要となるファイル群を作業用ディレクトリ ```appdir``` へ配置する処理及び、 [AppImage][APPI] ファイルに設定するアイコンファイルの修正等、 [AppImage][APPI] ファイルの生成に必要な処理を記述する必要があります。
 
 ## ```AppImage::Builder``` クラスの派生クラスの実例
 
-以下に、 ```brew appimage-build``` コマンドによって使用される ```AppImage::Builder``` クラスの派生クラスの実例を示します。本文書では、疑似端末の多重化ソフトである tmux の [AppImage] ファイルを生成するための ```TmuxBuilder``` を示します。
+以下に、 ```brew appimage-build``` コマンドによって使用される ```AppImage::Builder``` クラスの派生クラスの実例を示します。本文書では、疑似端末の多重化ソフトである tmux の [AppImage][APPI] ファイルを生成するための ```TmuxBuilder``` を示します。
 
 ```
   # AppImage::Builder クラスの派生クラスとして TmuxBuilder を定義。
@@ -88,8 +96,8 @@
       EOS
     end
 
-    # TmuxBuilder#exec_path_list メソッドで、作業用ディレクトリ AppDir/usr/bin に配置する
-    # 実行ファイルを Pathname クラスのインスタンスのリストの形式で返す。
+    # TmuxBuilder#exec_path_list メソッドで、作業用ディレクトリ /path/to/AppDir/usr/bin に
+    # 配置する実行ファイルを Pathname クラスのインスタンスのリストの形式で返す。
     def exec_path_list
       # TmuxBuilder#opt_bin メソッドで、引数に渡された Formula クラスのインスタンスメソッド
       # Formula#opt_bin の返り値を得る。
@@ -98,7 +106,7 @@
 
     # TmuxBuilder#pre_build_appimage メソッドで、 AppImage ファイルの生成直前の処理を行う。
     def pre_build_appimage(appdir, verbose)
-      # ここでは、 ncurses の設定ファイルを AppDir/usr/share 以下に配置する。
+      # ここでは、 ncurses の設定ファイルを /path/to/AppDir/usr/share 以下に配置する。
       system("cp -pRv #{Formula["z80oolong/tmux/tmux-ncurses@6.2"].opt_share}/terminfo #{appdir}/usr/share")
     end
   end
