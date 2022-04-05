@@ -78,6 +78,32 @@ module AppImage
       EOS
     end
 
+    def appdata_xml(exec_path); <<~EOS
+      <?xml version="1.0" encoding="UTF-8"?>
+      <component type="desktop">
+        <id>appimagetool.desktop</id>
+        <metadata_license>#{@formula.license}</metadata_license>
+        <project_license>MIT</project_license>
+        <name>#{exec_path.basename.to_s.capitalize}</name>
+        <summary>#{@formula.desc}</summary>
+        <description>
+          <p>
+          `#{appimage_name}-#{appimage_version}-#{appimage_arch}.AppImage` is
+          a AppImage package file for execting `#{exec_path.basename}` command.
+          </p>
+          <p>
+          This AppImage package file is that #{@formula.desc}.
+          </p>
+        </description>
+        <url type="homepage">#{@formula.homepage}</url>
+        <project_group>#{@formula.name.to_s.capitalize}</project_group>
+        <provides>
+          <binary>#{exec_path.basename}</binary>
+        </provides>
+      </component>
+      EOS
+    end
+
     def pre_build_appimage(appdir, verbose = false)
       ohai "pre_build_appimage: Noop." if verbose
     end

@@ -102,6 +102,9 @@ module AppImage
       ohai "Install #{appdir_share}/applications/#{exec_base}.desktop" if verbose
       (appdir_share/"applications/#{exec_base}.desktop").write(builder.desktop(exec_path))
 
+      ohai "Install #{appdir_share}/metainfo/#{exec_base}.appdata.xml" if verbose
+      (appdir_share/"metainfo/#{exec_base}.appdata.xml").write(builder.appdata_xml(exec_path))
+
       Dir.chdir(builder.appdir.to_s) do
         system("#{SHELL.ln} -sf usr/share/applications/#{exec_base}.desktop .")
       end
