@@ -38,41 +38,43 @@ module Homebrew
     args = appimage_build_args.parse
     formula = args.named.to_formulae.first
 
-    if args.load_file then
-      loadfile = Pathname.new(args.load_file).realpath
-      AppImage::Builder::NameSpace.module_eval(loadfile.read)
-      ohai "Load #{loadfile}" if args.verbose?
-      builder = AppImage::Builder.builder_class.new(formula)
-    else
-      builder = AppImage::Builder.new(formula)
+    begin
+      if args.load_file then
+        loadfile = Pathname.new(args.load_file).realpath
+        AppImage::Builder::NameSpace.module_eval(loadfile.read)
+        ohai "Load #{loadfile}" if args.verbose?
+        builder = AppImage::Builder.builder_class.new(formula)
+      else
+        builder = AppImage::Builder.new(formula)
+      end
+
+      install_apprun_icons_to_appdir(builder, args.verbose?)
+      builder.exec_path_list.each do |exec_path|
+        so_path_list = depend_so_path_list(exec_path,
+                        :verbose        => args.verbose?,
+                        :exclude_list   => builder.exclude_list,
+                        :include_list   => builder.include_list,
+                        :global_exclude => args.global_exclude?,
+                        :core_include   => args.core_include?)
+        install_bin_lib_to_appdir(builder, exec_path, so_path_list, args.verbose?)
+      end
+
+      ohai "Call method #{builder.class.name}#pre_build_appimage" if args.verbose?
+      builder.pre_build_appimage(builder.appdir, args.verbose?)
+
+      if args.output then
+        output_file = Pathname.new(args.output)
+        output_file = (output_file.dirname.realpath/output_file.basename)
+      else
+        appname = builder.appimage_name
+        appversion = builder.appimage_version
+        apparch = builder.appimage_arch
+        output_file = (Pathname.pwd/"#{appname}-#{appversion}-#{apparch}.AppImage")
+      end
+      build_appimage(builder, output_file, args.verbose?)
+    ensure
+      ohai "Delete #{(builder.appdir/"..").realpath}" if args.verbose?
+      builder.appdir.destroy
     end
-
-    install_apprun_icons_to_appdir(builder, args.verbose?)
-    builder.exec_path_list.each do |exec_path|
-      so_path_list = depend_so_path_list(exec_path,
-                      :verbose        => args.verbose?,
-                      :exclude_list   => builder.exclude_list,
-                      :include_list   => builder.include_list,
-                      :global_exclude => args.global_exclude?,
-                      :core_include   => args.core_include?)
-      install_bin_lib_to_appdir(builder, exec_path, so_path_list, args.verbose?)
-    end
-
-    ohai "Call method #{builder.class.name}#pre_build_appimage" if args.verbose?
-    builder.pre_build_appimage(builder.appdir, args.verbose?)
-
-    if args.output then
-      output_file = Pathname.new(args.output)
-      output_file = (output_file.dirname.realpath/output_file.basename)
-    else
-      appname = builder.appimage_name
-      appversion = builder.appimage_version
-      apparch = builder.appimage_arch
-      output_file = (Pathname.pwd/"#{appname}-#{appversion}-#{apparch}.AppImage")
-    end
-    build_appimage(builder, output_file, args.verbose?)
-
-    ohai "Delete #{(builder.appdir/"..").realpath}" if args.verbose?
-    builder.appdir.destroy
   end
 end
