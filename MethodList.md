@@ -46,6 +46,30 @@
 
 ```AppImage::Builder#exec_path_list``` の返り値には、生成された [AppImage][APPI] の実行によって起動されるアプリケーションの実行ファイルや、これらの起動等を補助するための実行ファイルのパスを列挙するようにして下さい。
 
+### ```AppImage::Builder#sign_key```
+
+```brew appimage-build``` コマンドによって出力される [AppImage][APPI] ファイルに GPG2 に基づく電子署名を行う際に使用する公開鍵の user ID を返します。 GPG2 に基づく電子署名を行わない場合は空文字列を返します。
+
+なお、返り値の形式は、前述の通り空文字列若しくは、 user ID を表す 16 進コードの文字列であることに留意する必要があります。
+
+### ```AppImage::Builder#sign_args```
+
+```brew appimage-build``` コマンドによって出力される [AppImage][APPI] ファイルに GPG2 に基づく電子署名を行う際に、 ```brew appimage-build``` コマンドにおいて使用されるアプリケーション ```appimagetool``` の内部で起動される ```gpg``` コマンドに渡す残りの引数及びオプションを返します。
+
+なお、返り値の形式は、 ```gpg``` コマンドに渡す各引数を表す文字列のリストであることに留意する必要があります。
+
+### ```AppImage::Builder#runtime_path```
+
+```brew appimage-build``` コマンドによって出力される [AppImage][APPI] ファイルを生成する際に、 [AppImage][APPI] ファイルの先頭部分に組み込む為のランタイムコードであり、 [AppImage][APPI] ファイル内のアプリケーションを起動する為に使用する ```runtime-x86_64``` 若しくはそれに類するランタイムコードのバイナリファイルが置かれている絶対パスを返します。
+
+返り値の形式は、ランタイムコードのバイナリファイルの絶対パスを表す ```Pathname``` クラスのインスタンスであることに留意する必要があります。
+
+### ```AppImage::Builder#extra_args```
+
+```brew appimage-build``` コマンドによって出力される [AppImage][APPI] ファイルを生成する為に起動されるアプリケーションである ```appimagetool``` に渡す残りその他の引数及びオプションを返します。
+
+なお、返り値の形式は、アプリケーション ```appimagetool``` に渡す各引数を表す文字列のリストであることに留意する必要があります。
+
 ### ```AppImage::Builder#apprun```
 
 ```brew appimage-build``` コマンドによって出力される [AppImage][APPI] ファイルの実行時に最初に実行されるスクリプトファイルである ```AppRun``` の内容を文字列で返します。
@@ -110,6 +134,11 @@
     def pre_build_appimage(appdir, verbose)
       # ここでは、 ncurses の設定ファイルを /path/to/AppDir/usr/share 以下に配置する。
       system("cp -pRv #{Formula["z80oolong/tmux/tmux-ncurses@6.2"].opt_share}/terminfo #{appdir}/usr/share")
+    end
+
+    def extra_args
+      # brew appimage-build によって起動される appimagetool に渡す残りの引数及びオプションを指定する
+      return ["--verbose"]
     end
   end
 ```

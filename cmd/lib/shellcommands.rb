@@ -1,4 +1,5 @@
 require "singleton"
+require "shellwords"
 
 module AppImage
   class ShellCommands
@@ -7,8 +8,10 @@ module AppImage
     def initialize
       @patchelf ||= (Formula["patchelf"].opt_bin/"patchelf")
       @appimagetool ||= (Formula["z80oolong/appimage/appimagetool"].opt_bin/"appimagetool")
+      @runtime ||= (Formula["z80oolong/appimage/appimage-runtime"].opt_libexec/"runtime-x86_64")
       @curl ||= Pathname.new(%x{which curl}.chomp!)
       @sha256sum ||= Pathname.new(%x{which sha256sum}.chomp!)
+      @gpg2 ||= Pathname.new(%x{which gpg}.chomp!)
       @ldd ||= Pathname.new(%x{which ldd}.chomp!)
       @cp ||= Pathname.new(%x{which cp}.chomp!)
       @ln ||= Pathname.new(%x{which ln}.chomp!)
@@ -21,9 +24,18 @@ module AppImage
         system "brew reinstall appimagetool"
       end
 
+      unless @runtime.executable? then
+        system "brew reinstall appimage-runtime"
+      end
+
       unless @curl.executable? then
         system "brew reinstall curl"
         @curl = (Formula["curl"].opt_bin/"curl")
+      end
+
+      unless @gpg2.executable? then
+        system "brew reinstall gpg2"
+        @gpg2 = (Formula["gpg2"].opt_bin/"gpg")
       end
 
       unless @ldd.executable? then
@@ -39,7 +51,7 @@ module AppImage
       end
     end
 
-    attr_reader :patchelf, :appimagetool, :curl, :ldd
+    attr_reader :patchelf, :appimagetool, :runtime, :curl, :gpg2, :ldd
     attr_reader :sha256sum, :cp, :ln
   end
 end

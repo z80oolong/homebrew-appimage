@@ -72,7 +72,7 @@ module AppImage
       Name=#{exec_path.basename.to_s.capitalize}
       Exec=#{exec_path.basename}
       Comment=#{@formula.desc}
-      Icon=appimage
+      Icon=#{self.icon_name}
       Categories=Development;
       Terminal=true
       EOS
@@ -81,7 +81,7 @@ module AppImage
     def appdata_xml(exec_path); <<~EOS
       <?xml version="1.0" encoding="UTF-8"?>
       <component type="desktop">
-        <id>appimagetool.desktop</id>
+        <id>#{exec_path.basename}.desktop</id>
         <metadata_license>#{@formula.license}</metadata_license>
         <project_license>MIT</project_license>
         <name>#{exec_path.basename.to_s.capitalize}</name>
@@ -102,6 +102,30 @@ module AppImage
         </provides>
       </component>
       EOS
+    end
+
+    def icon_path
+      return ((Pathname.new(__FILE__).realpath.dirname)/"../icons/appimage.png").realpath
+    end
+
+    def icon_name
+      return @formula.name
+    end
+
+    def sign_key
+      return ""
+    end
+
+    def sign_args
+      return ["-v"]
+    end
+
+    def runtime_path
+      return (Formula["z80oolong/appimage/appimage-runtime"].opt_libexec/"runtime-x86_64")
+    end
+
+    def extra_args
+      return []
     end
 
     def pre_build_appimage(appdir, verbose = false)

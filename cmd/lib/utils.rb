@@ -44,7 +44,8 @@ module AppImage
     end
 
     def install_apprun_icons_to_appdir(builder, verbose = false)
-      appimage_icon_path = ((Pathname.new(__FILE__).realpath.dirname)/"../icons/appimage.png").realpath
+      appimage_icon_path = builder.icon_path
+      appimage_icon_name = builder.icon_name
       appdir = builder.appdir
 
       ohai "Install #{appdir}/AppRun." if verbose
@@ -56,10 +57,10 @@ module AppImage
         (appdir.share/"icons/hicolor/#{d}/apps").mkpath
       end
 
-      ohai "Install #{appdir.share}/icons/hicolor/128x128/apps/appimage.png" if verbose
-      system "#{SHELL.cp} -pR #{appimage_icon_path} #{appdir.share}/icons/hicolor/128x128/apps/appimage.png"
+      ohai "Install #{appdir.share}/icons/hicolor/128x128/apps/#{appimage_icon_name}.png" if verbose
+      system "#{SHELL.cp} -pR #{appimage_icon_path} #{appdir.share}/icons/hicolor/128x128/apps/#{appimage_icon_name}.png"
       Dir.chdir(appdir.to_s) do
-        system "#{SHELL.ln} -sf usr/share/icons/hicolor/128x128/apps/appimage.png ."
+        system "#{SHELL.ln} -sf usr/share/icons/hicolor/128x128/apps/#{appimage_icon_name}.png ."
       end
     end
 
@@ -99,7 +100,7 @@ module AppImage
         end
       end
 
-      ohai "Install #{appdir_share}/applications/#{exec_base}.desktop" if verbose
+      ohai "Install #{appdir_share}/applications/org.jpn.zool.#{exec_base}.desktop" if verbose
       (appdir_share/"applications/#{exec_base}.desktop").write(builder.desktop(exec_path))
 
       ohai "Install #{appdir_share}/metainfo/#{exec_base}.appdata.xml" if verbose
@@ -111,8 +112,26 @@ module AppImage
     end
 
     def build_appimage(builder, output_file, verbose = false)
-      ohai "AppImageTool -n #{builder.appdir} #{output_file}" if verbose
-      system "#{SHELL.appimagetool} -n #{builder.appdir} #{output_file}"
+      args = ["-n"]
+
+      if /^[0-9A-F]+$/ === builder.sign_key.to_s then
+        args << "--sign"; args << "--sign-key"; args << builder.sign_key.to_s
+        if builder.sign_args.instance_of?(Array) && !builder.sign_args.empty? then
+          args << "--sign-args"; args << "'#{builder.sign_args.shelljoin}'"
+        end
+      end
+
+      if builder.runtime_path.executable? then
+        args << "--runtime-file"; args << "#{builder.runtime_path}"
+      end
+
+      if builder.extra_args.instance_of?(Array) && !builder.extra_args.empty? then
+        args << builder.extra_args.each {|arg| args << arg.shellescape}
+      end
+      args = args.join(" ")
+
+      ohai "AppImageTool #{args} #{builder.appdir} #{output_file}" if verbose
+      system "#{SHELL.appimagetool} #{args} #{builder.appdir} #{output_file}"
     end
   end
 end

@@ -59,19 +59,33 @@
 以下に、 ```brew appimage-install``` コマンドが取るオプションについて示します。
 
 - ```-e, --extract``` … 引数で指定された [AppImage][APPI] ファイルのインストール時に、 [AppImage][APPI] ファイルに ```--appimage-extract``` オプションを付与して、 [Linuxbrew][BREW] に [AppImage][APPI] ファイルの展開を行います。
-- ```-n, --name``` … 引数で指定された [AppImage][APPI] ファイルのインストール先とする為の [Linuxbrew][BREW] の Formula 名を ```"<name>@<version>``` の形式で指定します。**このオプションの指定は必須であることに留意して下さい。**
-- ```-c, --command``` … [AppImage][APPI] ファイルを実行するために用いるコマンド名を指定します。**このオプションの指定は必須であることに留意して下さい。**
+- ```-n, --dry-run``` … ```brew appimage-install``` コマンドの実行の際、実際に [Linuxbrew][BREW] への [AppImage] ファイルの導入は行われず、導入先の Cellar 名及びバージョン番号等を画面に表示して ```brew appimage-install``` コマンドを終了します。このオプションは、 ```brew appimage-install``` コマンドの Cellar 名及びバージョン番号の解析結果の確認の為に使用されます。
+- ```-N, --name``` … 引数で指定された [AppImage][APPI] ファイルのインストール先とする為の [Linuxbrew][BREW] の Cellar の名前を明示的に指定します。
+- ```-V, --version``` … 引数で指定された [AppImage][APPI] ファイルのインストール先とする為の [Linuxbrew][BREW] の Cellar のバージョン番号を明示的に指定します。
+- ```-c, --command``` … [AppImage][APPI] ファイルを実行するために用いるコマンド名を明示的に指定します。
 - ```-O, --output``` … [AppImage][APPI] ファイルのインストールを行わず、標準出力に [AppImage][APPI] ファイルをインストールする為の Formula ファイルを出力します。
 - ```-v, --verbose``` … [AppImage][APPI] ファイルのインストールの過程の詳細を表示します。
 
-例えば、 ```https://example.com/download/foo-1.0-x86_64.AppImage``` なる URL に置かれた [AppImage][APPI] ファイルを ```foo@1.0``` なる Formula 名で [Linuxbrew][BREW] にインストールし、これを ```foo``` なるコマンド名にて実行させるようにするには、以下のように ```brew appimage-install``` コマンドを実行します。
+なお、 ```brew appimage-install``` コマンドによる [AppImage][APPI] ファイルのインストールのインストール先となる Cellar の名前及びバージョン番号は、 ```--name, --version`` によって明示的に指定されなければ、引数によって指定された [AppImage][APPI] ファイル名より自動的に抽出されたものが用いられます。
 
-なお、 ```brew appimage-install``` コマンドによってインストールされた [AppImage][APPI] ファイルは、 [Linuxbrew][BREW] からは、 **Keg only としてインストールされることに留意して下さい。**
+ここに、 ```brew appimage-install``` コマンドによる [AppImage][APPI] ファイルのインストールのインストール先となる Cellar のバージョン番号を決定する順序について示します。
 
-実際に ```foo``` コマンドを使用する際は、 ```brew link --force``` コマンドを実行する必要があります。
+- ```brew appimage-install``` コマンドで ```--version``` オプションにより明示的に指定した文字列。
+- ```--version``` オプションによりバージョン番号が指定されなければ、 [AppImage][APPI] ファイルのファイル名中において、数字及びピリオドが連続する文字列。
+
+なお、 ```brew appimage-install``` コマンドで [AppImage][APPI] ファイルをインストールした場合、 [AppImage][APPI] ファイルのインストール先となる Cellar の名前は以下のようにして決められます。
+
+- ```brew appimage-install``` コマンドで ```--name``` により明示的に指定した文字列。
+- ```--name``` オプションが指定されない場合は、 ```brew appimage-install``` コマンドにより自動的に抽出される [AppImage][APPI] ファイル名の先頭の英数字及びハイフン等より構成される文字列に (もし存在しなければ) "appimage-" を付加した文字列。例えば、 ```foo-bar-0.0.1.AppImage``` の場合は、 ```appimage-foo-bar``` となる。
+
+ここで、 ```--version``` オプションが明示的に指定されず、 [AppImage][APPI] ファイルのファイル名等よりバージョン番号及び Cellar 名の解析に失敗した場合は、 ```brew appimage-install``` はエラーを返します。この場合は、 ```brew appimage-install``` に ```--name``` 及び ```--version``` オプションを明示的に指定するようにして下さい。
+
+なお、 ```brew appimage-install``` コマンドによってインストールされた [AppImage][APPI] ファイルは、 [Linuxbrew][BREW] からは、 **Keg only としてインストールされることに留意して下さい。実際に ```foo``` コマンドを使用する際は、 ```brew link --force``` コマンドを実行する必要があります。**
+
+以下に、 ```https://example.com/download/foo-1.0.2-x86_64.AppImage``` に存在する [AppImage][APPI] ファイルを Cellar 名 ```foo@1.0``` に導入する場合の ```brew appimage-install``` の実行方法について示します。
 
 ```
- $ brew appimage-install -n foo@1.0 -c foo https://example.com/download/foo-1.0-x86_64.AppImage
+ $ brew appimage-install -N foo@1.0 -c foo https://example.com/download/foo-1.0.2-x86_64.AppImage
  $ brew link --force foo@1.0    # (foo コマンドを使用する場合に必要。)
 ```
 
