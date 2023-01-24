@@ -62,7 +62,13 @@ module AppImage
       fi
 
       EXEC=$(grep -e '^Exec=.*' "${APPDIR}"/*.desktop | head -n 1 | cut -d "=" -f 2 | cut -d " " -f 1)
-      exec "${EXEC}" "$@"
+      LDSO="${APPDIR}/usr/bin/ld.so"
+
+      if [ -x "${LDSO} ] ; then"
+        exec "${LDSO}" "${EXEC}" "$@"
+      else
+        exec "${EXEC}" "$@"
+      fi
       EOS
     end
 

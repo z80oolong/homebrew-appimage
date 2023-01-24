@@ -83,6 +83,17 @@ module AppImage
           if /^ld-linux.*\.so/ === so_base.to_s then
             ohai "PatchELF --set-interpreter #{so_real} #{appdir_bin}/#{exec_base}" if verbose
             system("#{SHELL.patchelf} --set-interpreter #{so_real} #{appdir_bin}/#{exec_base}")
+
+            glibc_list = so_path_list.find_all {|_so_base, _| /^libc\.so/ === _so_base}
+            glibc_ldso = Formula["glibc"].opt_lib/realbase
+            if (!glibc_list.empty? && glibc_ldso.exist?) then
+              ohai "Install #{glibc_ldso}" if verbose
+              system("#{SHELL.cp} -pR #{glibc_ldso} .")
+              Dir.chdir(appdir_bin.to_s) do
+                ohai "Chdir #{appdir_bin} && Link ../lib/#{realbase} -> ./ld.so" if verbose
+                system("#{SHELL.ln} -sf ../lib/#{realbase} ./ld.so")
+              end
+            end
           elsif (Pathname.pwd/realbase).exist? then
             ohai "Skip, #{realbase} exists." if verbose
           else

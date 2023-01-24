@@ -19,7 +19,7 @@ module Homebrew
       homepage "#{option[:url]}"
 
       url "#{option[:url]}"
-      sha256 "#{option[:sha256]}"
+      #{option[:sha256].empty? ? "#sha256" : "sha256"} "#{option[:sha256]}"
       version "#{option[:version]}"
       #revision 0
 
@@ -74,8 +74,8 @@ module Homebrew
     option[:basename] = Pathname.new(option[:url].path).basename
     name = Pathname.new(option[:basename].to_s.gsub(arch_exp, ""))
     option[:version] = ((name.to_s)[/-?(HEAD-[0-9a-f]+)/, 1] || name.version).to_s
-    name = (name.to_s)[/^([^\.]*?)-?#{Regexp.escape(option[:version])}/, 1] || ""
-    option[:command] = (name[/^([a-zA-Z]+).*/, 1] || "").downcase
+    name = (name.to_s.downcase)[/^([^\.]*?)-?#{Regexp.escape(option[:version])}/, 1] || ""
+    option[:command] = (name[/^([a-z]+).*/, 1] || "")
     option[:name] = (name.empty? || (/^appimage-/ === name)) ? name : ("appimage-" + name)
 
     if (option[:version].empty? && !args.version) then
@@ -117,9 +117,10 @@ module Homebrew
 
     option[:klass] = Formulary.class_s(option[:name])
     puts "Calcalating SHA256 Checksum of AppImage file..." if verbose
-    sha256 = %x{#{SHELL.curl} -s -L -o - #{option[:url]} | #{SHELL.sha256sum} -}
-    sha256.gsub!(/^([0-9a-f]*).*/) { $1 }
-    option[:sha256] = sha256.chomp!
+    #sha256 = %x{#{SHELL.curl} -s -L -o - #{option[:url]} | #{SHELL.sha256sum} -}
+    #sha256.gsub!(/^([0-9a-f]*).*/) { $1 }
+    #option[:sha256] = sha256.chomp!
+    option[:sha256] = ""
     ohai "SHA256 Checksum of AppImage file = #{option[:sha256]}" if verbose
 
     if args.output? then
