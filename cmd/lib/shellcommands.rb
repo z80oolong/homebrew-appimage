@@ -28,7 +28,7 @@ module AppImage
 
       if !@runtime.executable? then
         system "brew", "reinstall", "appimage-runtime"
-        @runtime = (Formula["z80oolong/appimage/appiamge-runtime"].opt_libexec/"runtime-x86_64")
+        @runtime = (Formula["z80oolong/appimage/appimage-runtime"].opt_libexec/"runtime-x86_64")
       end
 
       if !@curl.executable? then
